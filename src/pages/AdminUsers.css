@@ -1,0 +1,147 @@
+.admin-users-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-users-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-users-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-users-filters .admin-select {
+  width: auto;
+  min-width: 200px;
+}
+
+.admin-users-toolbar-end {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-users-count {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.admin-users-count .num {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.admin-users-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-users-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.admin-users-table th {
+  padding: 10px 14px;
+  background: var(--bg-sunken);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: left;
+}
+
+.admin-users-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.admin-users-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-users-table td strong {
+  display: block;
+  color: var(--text-h);
+}
+
+.admin-users-table td strong + span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.admin-user-status {
+  display: inline-flex;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--neutral-border);
+  background: var(--neutral-bg);
+  color: var(--neutral);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.admin-user-status.approved { background: var(--success-bg); border-color: var(--success-border); color: var(--success); }
+.admin-user-status.pending { background: var(--warning-bg); border-color: var(--warning-border); color: var(--warning); }
+.admin-user-status.suspended { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger); }
+
+.admin-user-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.admin-user-actions .admin-button {
+  min-height: 32px;
+  padding: 5px 11px;
+}
+
+.admin-users-empty {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 40px 20px;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.admin-users-empty strong {
+  color: var(--text-h);
+}
+
+.admin-users-skeleton {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-users-skeleton .skeleton {
+  height: 52px;
+  border-radius: var(--radius-sm);
+}
+
+@media (max-width: 640px) {
+  .admin-users-filters,
+  .admin-users-filters .admin-select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .admin-users-toolbar-end {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

@@ -1,0 +1,224 @@
+/* ==========================================================
+   STUDENT-FACING PRIMITIVES (td-*)
+   The palette lives in index.css :root. These are the student
+   pages' own names for it, so a ballot red and a login red can
+   never drift apart.
+   ========================================================== */
+
+:root {
+  --color-white: var(--bg);
+  --color-surface: var(--surface);
+  --color-red: var(--accent);
+  --color-red-deep: var(--accent-hover);
+  --color-red-soft: var(--accent-bg);
+  --color-gold: var(--gold);
+  --color-gold-deep: var(--gold-ink);
+  --color-gold-soft: var(--gold-bg);
+  --color-ink: var(--text-h);
+  --color-ink-muted: var(--text-muted);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --font-body: var(--sans);
+  --radius-md: var(--radius);
+  --ease-standard: var(--ease-out);
+}
+
+.td-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  color: var(--text);
+}
+
+.td-shell {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 28px 20px 56px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.td-shell.td-shell-wide {
+  max-width: 760px;
+}
+
+.td-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 26px 24px;
+}
+
+.td-card + .td-card {
+  margin-top: 14px;
+}
+
+.td-heading {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: clamp(1.5rem, 1.25rem + 1vw, 1.875rem);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  color: var(--text-h);
+}
+
+.td-subtext {
+  margin: 0;
+  max-width: 60ch;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+/* ---------- buttons ---------- */
+
+.td-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 50px;
+  padding: 14px 22px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease-out),
+    border-color 160ms var(--ease-out),
+    box-shadow 160ms var(--ease-out),
+    transform 120ms var(--ease-out);
+}
+
+.td-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.td-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.td-btn-primary {
+  background: var(--accent-solid);
+  color: var(--accent-ink);
+  box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.16), 0 8px 20px -10px oklch(35% 0.14 18 / 0.7);
+}
+
+.td-btn-ghost {
+  background: var(--surface-raised);
+  color: var(--text-h);
+  border-color: var(--border-strong);
+}
+
+.td-btn-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  min-height: 40px;
+  padding: 8px 10px;
+  margin: 0 -10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: background-color 160ms var(--ease-out), color 160ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .td-btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+  .td-btn-ghost:hover:not(:disabled) { border-color: var(--text-faint); }
+  .td-btn-text:hover { color: var(--text-h); background: var(--bg-sunken); }
+}
+
+/* ---------- fields ---------- */
+
+.td-field label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.td-field select,
+.td-field input {
+  width: 100%;
+  min-height: 50px;
+  padding: 12px 42px 12px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-raised);
+  color: var(--text-h);
+  transition: border-color 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
+}
+
+.td-field select {
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 256 256'%3E%3Cpath fill='%23806a6c' d='M213.66 101.66l-80 80a8 8 0 0 1-11.32 0l-80-80a8 8 0 0 1 11.32-11.32L128 164.69l74.34-74.35a8 8 0 0 1 11.32 11.32Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+}
+
+.td-field select:focus-visible,
+.td-field input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-bg);
+}
+
+.td-field-hint {
+  display: block;
+  margin-top: 7px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.td-field-error {
+  margin-top: 7px;
+  font-size: 0.8125rem;
+  color: var(--danger);
+}
+
+/* ---------- progress ---------- */
+
+.td-progress-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.td-progress-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  background: var(--accent-solid);
+  transform-origin: left center;
+  transition: transform 420ms var(--ease-out), background-color 240ms var(--ease-out);
+}
+
+.td-progress-fill.is-complete {
+  background: var(--gold);
+}
+
+@media (max-width: 420px) {
+  .td-card {
+    padding: 22px 18px;
+  }
+}

@@ -1,0 +1,318 @@
+.auth-shell {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  background: var(--bg);
+}
+
+/* ---------- brand panel ---------- */
+
+.auth-brand {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 32px;
+  padding: clamp(40px, 6vw, 72px);
+  overflow: hidden;
+  isolation: isolate;
+  color: oklch(97% 0.012 20);
+  background:
+    radial-gradient(120% 80% at 0% 0%, oklch(46% 0.15 20) 0%, transparent 60%),
+    radial-gradient(90% 70% at 100% 100%, oklch(22% 0.07 16) 0%, transparent 70%),
+    oklch(33% 0.12 18);
+}
+
+/* A thin gold rule inset from the edges, like the border on a
+   printed certificate. It is geometry, not illustration. */
+.auth-brand-frame {
+  position: absolute;
+  inset: 18px;
+  z-index: -1;
+  border: 1px solid oklch(78% 0.11 82 / 0.38);
+  border-radius: 22px;
+  pointer-events: none;
+}
+
+.auth-brand-frame::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid oklch(78% 0.11 82 / 0.14);
+  border-radius: 18px;
+}
+
+.auth-brand-copy h1 {
+  margin: 0 0 14px;
+  color: oklch(99% 0.005 20);
+  font-size: clamp(2.25rem, 1.6rem + 2.4vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-variation-settings: 'opsz' 96;
+}
+
+.auth-brand-university {
+  margin: 0 0 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: oklch(84% 0.09 82);
+}
+
+.auth-brand-tagline {
+  max-width: 34ch;
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: oklch(92% 0.02 20);
+}
+
+.auth-brand-points {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 22px 0 0;
+  list-style: none;
+  border-top: 1px solid oklch(100% 0 0 / 0.14);
+}
+
+.auth-brand-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 40ch;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: oklch(94% 0.015 20);
+}
+
+.auth-brand-points svg {
+  flex: none;
+  margin-top: 1px;
+  color: oklch(80% 0.11 82);
+}
+
+/* One authored entrance: the brand panel settles in, top to bottom. */
+@media (prefers-reduced-motion: no-preference) {
+  .auth-brand > * {
+    animation: auth-rise 700ms var(--ease-out) both;
+  }
+
+  .auth-brand > :nth-child(2) { animation-delay: 60ms; }
+  .auth-brand > :nth-child(3) { animation-delay: 140ms; }
+  .auth-brand > :nth-child(4) { animation-delay: 220ms; }
+  .auth-brand-frame { animation: none !important; }
+}
+
+@keyframes auth-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(4px);
+  }
+}
+
+/* ---------- form column ---------- */
+
+.auth-form-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 28px;
+}
+
+.auth-panel {
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-panel-wide {
+  max-width: 460px;
+}
+
+.auth-panel-head {
+  margin-bottom: 28px;
+}
+
+.auth-panel-head h2 {
+  margin: 0 0 6px;
+  font-size: clamp(1.625rem, 1.4rem + 0.8vw, 2rem);
+  letter-spacing: -0.03em;
+}
+
+.auth-panel-head p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.auth-form {
+  display: grid;
+  gap: 18px;
+}
+
+.auth-form .btn-primary {
+  margin-top: 6px;
+  min-height: 50px;
+  font-size: 1rem;
+}
+
+.auth-row-end {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -8px;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 20px;
+  font-size: 0.8125rem;
+  color: var(--text-faint);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.auth-note {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: var(--radius);
+  background: var(--success-bg);
+  color: var(--text-h);
+}
+
+.auth-note-text {
+  margin: 2px 0 0;
+}
+
+.auth-note svg {
+  flex: none;
+  color: var(--success);
+}
+
+.auth-steps {
+  display: flex;
+  gap: 6px;
+  margin: -12px 0 24px;
+}
+
+.auth-steps span {
+  flex: 1;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--border);
+  transition: background-color 240ms var(--ease-out);
+}
+
+.auth-steps span.is-done {
+  background: var(--accent-solid);
+}
+
+.auth-fieldset {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.auth-fieldset legend {
+  padding: 0;
+  margin-bottom: 14px;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: 0.9375rem;
+  color: var(--text-h);
+}
+
+.auth-fieldset + .auth-fieldset {
+  margin-top: 14px;
+}
+
+.input-skeleton {
+  height: 46px;
+  border-radius: var(--radius-sm);
+}
+
+.auth-password-help {
+  margin: -8px 0 0;
+}
+
+.field-reveal {
+  animation: field-reveal 260ms var(--ease-out) both;
+}
+
+@keyframes field-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.auth-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 480px) {
+  .auth-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+/* ---------- small screens: brand becomes a compact masthead ---------- */
+
+@media (max-width: 900px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .auth-brand {
+    position: relative;
+    height: auto;
+    gap: 18px;
+    padding: calc(28px + env(safe-area-inset-top, 0px)) 24px 30px;
+  }
+
+  .auth-brand-frame {
+    inset: 10px;
+    border-radius: 18px;
+  }
+
+  .auth-brand-copy h1 {
+    font-size: 2rem;
+    margin-bottom: 8px;
+  }
+
+  .auth-brand-tagline {
+    font-size: 0.9375rem;
+  }
+
+  .auth-brand-points {
+    display: none;
+  }
+
+  .brand-logos-lg .brand-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .auth-form-col {
+    align-items: flex-start;
+    padding: 32px 20px calc(48px + env(safe-area-inset-bottom, 0px));
+  }
+}

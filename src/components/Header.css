@@ -1,0 +1,210 @@
+/* ---------- logo strip (shared by header and auth panel) ---------- */
+
+.brand-logos {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+.brand-logo {
+  object-fit: contain;
+  border-radius: 50%;
+  background: oklch(100% 0 0);
+  box-shadow: 0 0 0 2px var(--surface), var(--shadow-sm);
+}
+
+.brand-logos-sm .brand-logo {
+  width: 36px;
+  height: 36px;
+}
+
+.brand-logos-sm .brand-logo + .brand-logo {
+  margin-left: -8px;
+}
+
+.brand-logos-lg {
+  gap: 10px;
+}
+
+.brand-logos-lg .brand-logo {
+  width: 52px;
+  height: 52px;
+  box-shadow: 0 0 0 1px oklch(100% 0 0 / 0.2), 0 8px 20px -8px oklch(10% 0.05 15 / 0.6);
+}
+
+/* ---------- header ---------- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  padding-top: env(safe-area-inset-top, 0px);
+  background: oklch(from var(--surface) l c h / 0.86);
+  backdrop-filter: saturate(1.4) blur(14px);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+
+@supports not (color: oklch(from red l c h)) {
+  .site-header { background: var(--surface); }
+}
+
+.site-header-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 64px;
+}
+
+.site-header-identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.site-header-text {
+  min-width: 0;
+}
+
+.site-header-university {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.site-header-org {
+  color: var(--text-faint);
+}
+
+.site-header-system {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 650;
+  font-size: 1rem;
+  letter-spacing: -0.015em;
+  color: var(--text-h);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+}
+
+.site-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: background-color 160ms var(--ease-out), color 160ms var(--ease-out);
+}
+
+.site-nav-link.is-active {
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .site-nav-link:not(.is-active):hover {
+    color: var(--text-h);
+    background: var(--bg-sunken);
+  }
+}
+
+.site-header-band {
+  border-top: 1px solid var(--border);
+  background: var(--bg-sunken);
+}
+
+.site-header-band-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 7px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 0.8125rem;
+}
+
+.site-header-election {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.site-header-desc {
+  color: var(--text-muted);
+}
+
+/* Phone: identity on top, nav becomes a bottom tab bar within
+   thumb reach, clear of the home indicator. */
+@media (max-width: 760px) {
+  /* backdrop-filter would make the header the containing block for
+     the fixed tab bar, pinning it inside the header. */
+  .site-header {
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .site-header-inner {
+    min-height: 56px;
+    padding: 8px 16px;
+  }
+
+  .site-header-band-inner {
+    padding: 6px 16px;
+  }
+
+  .site-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-sticky);
+    justify-content: space-around;
+    gap: 0;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -8px 24px -12px oklch(25% 0.05 15 / 0.18);
+  }
+
+  .site-nav-link {
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 52px;
+    padding: 6px 4px;
+    font-size: 0.6875rem;
+    text-align: center;
+    background: none !important;
+  }
+
+  .site-nav-link svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .site-nav-link.is-active svg {
+    color: var(--accent);
+  }
+}

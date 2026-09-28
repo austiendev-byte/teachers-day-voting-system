@@ -1,0 +1,95 @@
+.site-footer {
+  margin-top: auto;
+  padding: 28px 20px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-sunken);
+}
+
+.site-footer-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px 40px;
+}
+
+.site-footer-dev {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-emblem {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 12px;
+  object-fit: cover;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.footer-label {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.footer-dev-name {
+  margin: 1px 0 0;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.site-footer-support {
+  display: grid;
+  gap: 10px;
+  max-width: 360px;
+}
+
+.footer-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.footer-secondary-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .footer-secondary-link:hover {
+    color: var(--accent);
+  }
+}
+
+.footer-support-note {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.footer-copy {
+  max-width: 1120px;
+  margin: 24px auto 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+/* Leave room for the fixed bottom tab bar on phones. */
+@media (max-width: 760px) {
+  .site-footer {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+}
