@@ -36,7 +36,6 @@ import AdminResults from './AdminResults'
 import AdminElectionManagement from './AdminElectionManagement'
 import AdminProblemReports from './AdminProblemReports'
 import AdminUsers from './AdminUsers'
-import AdminStudentIdUpload from './AdminStudentIdUpload'
 import './AdminDashboard.css'
 
 const SCHOOL_ORDER = ['STCS', 'SNHS', 'SAS', 'STHM', 'SOE', 'SBM', 'STED', 'SCJE']
@@ -1527,11 +1526,10 @@ function AdminDashboard() {
             <section>
               <div className="page-heading">
                 <div>
-                  <h1>Students</h1>
-                  <p>Control who can register, then approve, suspend or remove student accounts.</p>
+                  <h1>Student accounts</h1>
+                  <p>Approve, suspend or remove student accounts, filtered by school.</p>
                 </div>
               </div>
-              <AdminStudentIdUpload />
               <div className="module-card"><AdminUsers /></div>
             </section>
           )}

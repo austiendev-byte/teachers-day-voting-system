@@ -239,8 +239,7 @@ function Register() {
       const normalizedStudentId = studentId.trim();
 
       // --------------------------------------------------
-      // STEP 1: Verify Student ID against the preloaded
-      // BiPSU eligible-student-ID whitelist.
+      // STEP 1: Check the Student ID is not already taken.
       // --------------------------------------------------
       const { data: eligibility, error: eligibilityError } =
         await registrationSupabase.rpc("check_student_id_registration", {
@@ -259,13 +258,6 @@ function Register() {
         ? eligibility[0]
         : eligibility;
 
-      if (eligibilityResult?.eligible !== true) {
-        toast.error(
-          "This Student ID is not on the eligible BiPSU student list.\n\nPlease check your Student ID or contact your school.",
-        );
-        return;
-      }
-
       if (eligibilityResult?.already_registered === true) {
         toast.error(
           "This Student ID already has an account.\n\nPlease use the login page or password recovery.",
@@ -275,10 +267,10 @@ function Register() {
 
       // --------------------------------------------------
       // STEP 2: Create the Supabase Auth account.
-      // The database trigger reads these metadata values,
-      // verifies the whitelist again, and creates the student
-      // profile as APPROVED. This second server-side check is
-      // required so a race cannot bypass the whitelist.
+      // The database trigger reads these metadata values and
+      // creates the student profile as APPROVED. Its unique
+      // index is the real one-account-per-Student-ID guard, so
+      // two simultaneous signups cannot create a duplicate.
       // --------------------------------------------------
       const { data: authData, error: authError } =
         await registrationSupabase.auth.signUp({
@@ -312,8 +304,6 @@ function Register() {
           message.includes("registered")
         ) {
           toast.error("This Student ID already has an account.");
-        } else if (message.includes("eligible")) {
-          toast.error("This Student ID is not eligible for registration.");
         } else {
           toast.error(`Registration failed.\n\n${authError.message}`);
         }
@@ -363,7 +353,7 @@ function Register() {
       tagline="Create your student account to take part in this year’s Teachers’ Day election."
       points={[
         "Takes less than two minutes",
-        "Your Student ID is checked against the authorized BiPSU student list",
+        "Each Student ID can register only one account",
         "One account, one ballot, per student",
       ]}
       title="Create your account"
@@ -412,7 +402,7 @@ function Register() {
               required
             />
             <p className="help-text">
-              Checked against the official BiPSU student list.
+              One account per Student ID. Enter it exactly as it appears on your school ID.
             </p>
           </div>
         </fieldset>
