@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx'
 import { useMemo, useState } from 'react'
+import { DownloadSimple } from '@phosphor-icons/react'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
 import { useConfirm } from '../components/ConfirmDialog'
@@ -417,6 +418,16 @@ function AdminFacultyUpload() {
         Leave Major blank or write ALL for every major of the program.
         Re-uploading an existing Faculty Code adds its new rows.
       </p>
+
+      <a
+        className="btn btn-secondary btn-sm"
+        href="/faculty-upload-sample.xlsx"
+        download
+        style={{ marginBottom: 12 }}
+      >
+        <DownloadSimple size={16} weight="bold" aria-hidden="true" />
+        Download sample Excel file
+      </a>
 
       <div className="table-wrap" style={{ marginBottom: 12 }}>
         <table className="table">
