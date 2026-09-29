@@ -53,6 +53,7 @@ declare
   v_student_id text;
   v_name text;
   v_program_id bigint;
+  v_major_id bigint;
 begin
   if coalesce(new.raw_user_meta_data->>'registration_type', '') <> 'student' then
     return new;
@@ -66,6 +67,13 @@ begin
   exception
     when invalid_text_representation then
       raise exception 'Invalid program selection.';
+  end;
+
+  begin
+    v_major_id := nullif(new.raw_user_meta_data->>'major_id', '')::bigint;
+  exception
+    when invalid_text_representation then
+      v_major_id := null;
   end;
 
   if v_student_id = '' then
@@ -88,6 +96,15 @@ begin
     raise exception 'Selected program does not exist.';
   end if;
 
+  if v_major_id is not null and not exists (
+    select 1
+    from public.majors m
+    where m.id = v_major_id
+      and m.program_id = v_program_id
+  ) then
+    raise exception 'Selected major does not belong to the selected program.';
+  end if;
+
   -- One Student ID = one student profile.
   -- The unique index also protects against simultaneous registrations.
   begin
@@ -96,6 +113,7 @@ begin
       name,
       account_status,
       program_id,
+      major_id,
       auth_user_id
     )
     values (
@@ -103,6 +121,7 @@ begin
       v_name,
       'approved',
       v_program_id,
+      v_major_id,
       new.id
     );
   exception
@@ -116,6 +135,9 @@ $function$;
 
 commit;
 
--- Rollback: re-run the handle_student_registration() and
--- check_student_id_registration() definitions from
--- 2026-09-27-student-id-whitelist-registration.sql.
+-- Applied 2026-09-29 to production (as written above) and load-test.
+-- Load-test's students table has no major_id column, so there the
+-- major lines were left out; everything else is identical.
+--
+-- Rollback: put back the eligible_student_ids check in both functions
+-- (see 2026-09-27-student-id-whitelist-registration.sql).
