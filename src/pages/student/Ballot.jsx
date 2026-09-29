@@ -50,14 +50,14 @@ const BallotCategory = memo(function BallotCategory({ category, faculty, value, 
             {optionFaculty.map((member) => (
               <option key={member.id} value={member.id}>
                 {member.name}
-                {member.programs?.program_name ? ` · ${member.programs.program_name}` : ''}
+                {member.teaches ? ` · ${member.teaches}` : ''}
               </option>
             ))}
           </select>
           <small id={`award-category-${categoryId}-help`} className="td-field-hint">
             {selectedMember
               ? 'You can change this until you submit the ballot.'
-              : 'Only faculty from your school are listed.'}
+              : 'Only faculty who teach in your school are listed.'}
           </small>
         </div>
       )}

@@ -39,7 +39,6 @@ function Register() {
   const toast = useToast();
 
   const [programs, setPrograms] = useState([]);
-  const [majors, setMajors] = useState([]);
 
   const [name, setName] = useState("");
   const [studentId, setStudentId] = useState("");
@@ -51,7 +50,6 @@ function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [loadingPrograms, setLoadingPrograms] = useState(true);
-  const [loadingMajors, setLoadingMajors] = useState(false);
   const [registering, setRegistering] = useState(false);
 
   useEffect(() => {
@@ -74,6 +72,11 @@ function Register() {
           id,
           school_code,
           school_name
+        ),
+        majors (
+          id,
+          major_code,
+          major_name
         )
       `,
       )
@@ -126,61 +129,22 @@ function Register() {
     setSchoolId(event.target.value);
     setProgramId("");
     setMajorId("");
-    setMajors([]);
   }
 
-  async function handleProgramChange(event) {
-    const selectedProgramId = event.target.value;
-
-    setProgramId(selectedProgramId);
+  function handleProgramChange(event) {
+    setProgramId(event.target.value);
     setMajorId("");
-    setMajors([]);
-
-    if (!selectedProgramId) {
-      return;
-    }
-
-    const selectedProgram = programs.find(
-      (program) => String(program.id) === String(selectedProgramId),
-    );
-
-    if (!selectedProgram) {
-      return;
-    }
-
-    // Only BSED requires a major
-    if (selectedProgram.program_code !== "BSED") {
-      return;
-    }
-
-    setLoadingMajors(true);
-
-    const { data, error } = await supabase
-      .from("majors")
-      .select(
-        `
-        id,
-        major_code,
-        major_name
-      `,
-      )
-      .eq("program_id", Number(selectedProgramId))
-      .order("major_name", { ascending: true });
-
-    if (error) {
-      console.error("Error loading majors:", error);
-      toast.error(`Could not load BSED majors.\n\n${error.message}`);
-      setLoadingMajors(false);
-      return;
-    }
-
-    setMajors(data || []);
-    setLoadingMajors(false);
   }
 
   function getSelectedProgram() {
     return programs.find((program) => String(program.id) === String(programId));
   }
+
+  // Any program with majors (BSED, BSBA, ...) requires the student to pick one.
+  const majors = [...(getSelectedProgram()?.majors || [])].sort((a, b) =>
+    a.major_name.localeCompare(b.major_name),
+  );
+  const programHasMajors = majors.length > 0;
 
   async function handleRegister(event) {
     event.preventDefault();
@@ -227,9 +191,8 @@ function Register() {
       return;
     }
 
-    // BSED students must select a major
-    if (selectedProgram.program_code === "BSED" && !majorId) {
-      toast.error("Please select your BSED major.");
+    if (programHasMajors && !majorId) {
+      toast.error("Please select your major.");
       return;
     }
 
@@ -332,8 +295,6 @@ function Register() {
     }
   }
 
-  const selectedProgram = getSelectedProgram();
-
   const passwordMismatch =
     confirmPassword.length > 0 && password !== confirmPassword;
 
@@ -342,7 +303,7 @@ function Register() {
     Boolean(
       schoolId &&
         programId &&
-        (selectedProgram?.program_code !== "BSED" || majorId),
+        (!programHasMajors || majorId),
     ),
     Boolean(email.trim() && password.length >= 6 && password === confirmPassword),
   ];
@@ -463,31 +424,27 @@ function Register() {
             </div>
           )}
 
-          {selectedProgram?.program_code === "BSED" && (
+          {programHasMajors && (
             <div className="field field-reveal">
               <label className="label" htmlFor="major">
-                BSED major
+                Major
               </label>
 
-              {loadingMajors ? (
-                <div className="skeleton input-skeleton" role="status" aria-label="Loading BSED majors" />
-              ) : (
-                <select
-                  className="input"
-                  id="major"
-                  value={majorId}
-                  onChange={(event) => setMajorId(event.target.value)}
-                  required
-                >
-                  <option value="">Select your major</option>
+              <select
+                className="input"
+                id="major"
+                value={majorId}
+                onChange={(event) => setMajorId(event.target.value)}
+                required
+              >
+                <option value="">Select your major</option>
 
-                  {majors.map((major) => (
-                    <option key={major.id} value={major.id}>
-                      {major.major_name}
-                    </option>
-                  ))}
-                </select>
-              )}
+                {majors.map((major) => (
+                  <option key={major.id} value={major.id}>
+                    {major.major_name}
+                  </option>
+                ))}
+              </select>
             </div>
           )}
         </fieldset>

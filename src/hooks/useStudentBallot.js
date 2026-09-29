@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { formatTeaches } from '../lib/facultyLabels'
 import { useToast } from '../components/Toast'
 import { useConfirm } from '../components/ConfirmDialog'
 
@@ -577,18 +578,21 @@ export default function useStudentBallot() {
     try {
       const schoolId = studentData.programs.school_id
 
+      // A faculty member is on this ballot when any of their assignments
+      // is a program of the student's school, whatever their home school.
       const { data, error } = await supabase
         .from('faculty')
         .select(`
           id,
           faculty_code,
           name,
-          programs (
-            program_code,
-            program_name
+          faculty_assignments!inner (
+            major_id,
+            majors ( major_code ),
+            programs!inner ( program_code, school_id )
           )
         `)
-        .eq('school_id', schoolId)
+        .eq('faculty_assignments.programs.school_id', schoolId)
         .order('name', { ascending: true })
 
       if (error) {
@@ -597,7 +601,12 @@ export default function useStudentBallot() {
         return
       }
 
-      setFaculty(data || [])
+      setFaculty(
+        (data || []).map(({ faculty_assignments: assignments, ...member }) => ({
+          ...member,
+          teaches: formatTeaches(assignments)
+        }))
+      )
     } finally {
       setLoadingFaculty(false)
     }

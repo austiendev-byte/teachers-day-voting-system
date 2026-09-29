@@ -6,6 +6,7 @@ import {
   useState
 } from 'react'
 import { supabase } from '../lib/supabase'
+import { formatTeaches } from '../lib/facultyLabels'
 import { useConfirm } from '../components/ConfirmDialog'
 import { useToast } from '../components/Toast'
 import {
@@ -697,11 +698,11 @@ function AdminDashboard() {
         id,
         faculty_code,
         name,
-        school_id,
         photo_url,
-        programs (
-          program_code,
-          program_name
+        faculty_assignments (
+          major_id,
+          majors ( major_code ),
+          programs ( program_code, school_id )
         )
       `)
       .order('name', { ascending: true })
@@ -710,6 +711,7 @@ function AdminDashboard() {
       throw facultyError
     }
 
+    // A faculty member is listed under every school they teach in.
     const groupedSchools = (schools || []).map((school) => ({
       school_id: school.id,
       school_code: school.school_code,
@@ -720,17 +722,25 @@ function AdminDashboard() {
       eligible_voters: 0,
       votes_cast: 0,
       participation: 0,
-      faculty_results: (faculty || [])
-        .filter((member) => Number(member.school_id) === Number(school.id))
-        .map((member) => ({
+      faculty_results: (faculty || []).flatMap((member) => {
+        const inSchool = (member.faculty_assignments || []).filter(
+          (assignment) => Number(assignment.programs?.school_id) === Number(school.id)
+        )
+
+        if (inSchool.length === 0) return []
+
+        const teaches = formatTeaches(inSchool)
+
+        return [{
           faculty_id: member.id,
           faculty_code: member.faculty_code,
           faculty_name: member.name,
-          program_code: member.programs?.program_code || '',
-          program_name: member.programs?.program_name || 'Program not listed',
+          program_code: teaches,
+          program_name: teaches || 'Program not listed',
           photo_url: member.photo_url,
           vote_count: 0
-        }))
+        }]
+      })
     }))
 
     setFacultyDirectory(groupedSchools)
