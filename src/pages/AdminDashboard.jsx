@@ -20,6 +20,7 @@ import {
   FileXls,
   ImageSquare,
   Images,
+  ListChecks,
   SignOut,
   ShieldWarning,
   SquaresFour,
@@ -33,6 +34,7 @@ import {
 } from '@phosphor-icons/react'
 import AdminFacultyUpload from './AdminFacultyUpload'
 import AdminFacultyPhotos from './AdminFacultyPhotos'
+import AdminFacultyAssignments from './AdminFacultyAssignments'
 import AdminResults from './AdminResults'
 import AdminElectionManagement from './AdminElectionManagement'
 import AdminProblemReports from './AdminProblemReports'
@@ -545,6 +547,7 @@ function AdminDashboard() {
   const [selectedSchool, setSelectedSchool] = useState(null)
   const [showFacultyUpload, setShowFacultyUpload] = useState(false)
   const [showFacultyPhotos, setShowFacultyPhotos] = useState(false)
+  const [showFacultyAssignments, setShowFacultyAssignments] = useState(false)
   const [facultyListSchool, setFacultyListSchool] = useState(null)
   const [uploadingSchoolId, setUploadingSchoolId] = useState(null)
   const refreshTimerRef = useRef(null)
@@ -1444,10 +1447,37 @@ function AdminDashboard() {
                     {showFacultyPhotos ? 'Hide photos' : 'Manage photos'}
                   </button>
                 </div>
+
+                <div className={`management-card${showFacultyAssignments ? ' is-open' : ''}`}>
+                  <span className="management-icon" aria-hidden="true"><ListChecks size={22} weight="duotone" /></span>
+                  <div>
+                    <h3>Faculty assignments</h3>
+                    <p>Change which schools, programs and majors each faculty member teaches.</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="admin-button secondary"
+                    aria-expanded={showFacultyAssignments}
+                    onClick={() => setShowFacultyAssignments((value) => !value)}
+                  >
+                    {showFacultyAssignments ? 'Hide assignments' : 'Edit assignments'}
+                  </button>
+                </div>
               </div>
 
               {showFacultyUpload && <div className="module-card submodule"><AdminFacultyUpload /></div>}
               {showFacultyPhotos && <div className="module-card submodule"><AdminFacultyPhotos /></div>}
+              {showFacultyAssignments && (
+                <div className="module-card submodule">
+                  <AdminFacultyAssignments
+                    onChanged={() => {
+                      loadFacultyDirectory().catch((error) => {
+                        console.error('Faculty directory refresh error:', error)
+                      })
+                    }}
+                  />
+                </div>
+              )}
 
               {renderSchoolDirectory()}
             </section>
