@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { CaretRight, Plus, Tray, WarningCircle, X } from '@phosphor-icons/react'
+import BackButton from '../components/BackButton'
 import './MyReports.css'
 
 const dateFormatter = new Intl.DateTimeFormat('en-PH', { dateStyle: 'medium', timeStyle: 'short' })
@@ -132,6 +133,8 @@ function MyReports() {
 
   return (
     <div className="my-reports-page">
+      <BackButton fallback="/student" />
+
       <header className="my-reports-head">
         <div>
           <h1>My reports</h1>

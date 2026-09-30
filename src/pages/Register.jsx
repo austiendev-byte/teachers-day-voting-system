@@ -310,6 +310,7 @@ function Register() {
 
   return (
     <AuthLayout
+      backTo="/login"
       wide
       tagline="Create your student account to take part in this year’s Teachers’ Day election."
       points={[

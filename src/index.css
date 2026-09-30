@@ -978,6 +978,12 @@ progress.bar::-moz-progress-bar { background: var(--accent-solid); border-radius
 .modal-card {
   width: 100%;
   max-width: 420px;
+  /* Never taller than the screen: the head and actions stay put and
+     only the body scrolls. dvh tracks mobile browser toolbars. */
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  display: flex;
+  flex-direction: column;
   padding: 24px;
   border-radius: var(--radius-xl);
   background: var(--surface-raised);
@@ -994,10 +1000,57 @@ progress.bar::-moz-progress-bar { background: var(--accent-solid); border-radius
   font-size: 1.1875rem;
 }
 
+.modal-head,
+.modal-actions {
+  flex: none;
+}
+
+.modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 .modal-card p {
   color: var(--text);
   white-space: pre-line;
-  margin-top: 8px;
+}
+
+.modal-review {
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+  counter-reset: review;
+}
+
+.modal-review li {
+  counter-increment: review;
+  display: grid;
+  grid-template-columns: 1.75rem 1fr;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-review li::before {
+  content: counter(review, decimal-leading-zero);
+  grid-row: span 2;
+  padding-top: 1px;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.modal-review-label {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.modal-review-value {
+  font-weight: 600;
+  color: var(--text-h);
+  overflow-wrap: anywhere;
 }
 
 .modal-icon {

@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { CheckCircle, Eye, EyeSlash } from '@phosphor-icons/react'
 import BrandLogos from './BrandLogos'
+import BackButton from './BackButton'
 import './AuthLayout.css'
 
 // Split layout shared by login, registration and password recovery.
 // Left: the institution (logos, name, what this system promises).
 // Right: the one task on this screen.
-function AuthLayout({ tagline, points = [], title, subtitle, wide = false, children }) {
+function AuthLayout({ tagline, points = [], title, subtitle, wide = false, backTo, backLabel, children }) {
   return (
     <div className="auth-shell">
       <aside className="auth-brand">
@@ -34,6 +35,8 @@ function AuthLayout({ tagline, points = [], title, subtitle, wide = false, child
 
       <main className="auth-form-col">
         <div className={`auth-panel${wide ? ' auth-panel-wide' : ''}`}>
+          {backTo && <BackButton fallback={backTo} label={backLabel} />}
+
           <header className="auth-panel-head">
             <h2>{title}</h2>
             {subtitle && <p>{subtitle}</p>}

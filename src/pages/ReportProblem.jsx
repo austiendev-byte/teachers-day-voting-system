@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
 import { ArrowRight, CheckCircle, ImageSquare, UploadSimple, WarningCircle } from '@phosphor-icons/react'
+import BackButton from '../components/BackButton'
 import './ReportProblem.css'
 
 const CATEGORIES = [
@@ -220,6 +221,8 @@ function ReportProblem() {
     return (
       <div className="report-page">
         <div className="report-message">
+          <BackButton fallback="/student" />
+
           <span className="report-message-icon is-success" aria-hidden="true">
             <CheckCircle size={28} weight="fill" />
           </span>
@@ -252,6 +255,8 @@ function ReportProblem() {
 
   return (
     <div className="report-page">
+      <BackButton fallback="/student" />
+
       <header className="report-head">
         <h1>Report a problem</h1>
         <p className="muted">

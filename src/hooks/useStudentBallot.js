@@ -699,18 +699,19 @@ export default function useStudentBallot() {
       faculty_id: Number(ballotSelections[String(category.category_id)])
     }))
 
-    const summary = ballot
-      .map((item) => {
-        const category = awardCategories.find((c) => Number(c.category_id) === item.category_id)
-        const member = faculty.find((f) => Number(f.id) === item.faculty_id)
-        return `${category?.display_order || ''}. ${category?.category_name || 'Award'} \u2014 ${member?.name || 'Selected faculty'}`
-      })
-      .join('\n')
+    const reviewItems = ballot.map((item) => {
+      const category = awardCategories.find((c) => Number(c.category_id) === item.category_id)
+      const member = faculty.find((f) => Number(f.id) === item.faculty_id)
+      return {
+        label: category?.category_name || 'Award',
+        value: member?.name || 'Selected faculty'
+      }
+    })
 
     const confirmed = await confirm({
       title: 'Review and submit your official ballot',
+      items: reviewItems,
       message:
-        `${summary}\n\n` +
         'This will submit your remaining selections as one official ballot. ' +
         'After submission, these selections cannot be changed.',
       confirmLabel: 'Submit Official Ballot'

@@ -44,6 +44,7 @@ function ResetPassword() {
 
   return (
     <AuthLayout
+      backTo="/login"
       tagline="Choose a new password to secure your account."
       title="Set a new password"
       subtitle={ready ? 'Use at least 6 characters.' : undefined}

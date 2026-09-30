@@ -16,6 +16,7 @@ export function ConfirmProvider({ children }) {
       setRequest({
         title: config.title || 'Please confirm',
         message: config.message || 'Are you sure?',
+        items: Array.isArray(config.items) ? config.items : null,
         confirmLabel: config.confirmLabel || 'Confirm',
         cancelLabel: config.cancelLabel || 'Cancel',
         danger: Boolean(config.danger)
@@ -63,13 +64,30 @@ export function ConfirmProvider({ children }) {
             aria-describedby="confirm-dialog-message"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className={`modal-icon${request.danger ? ' is-danger' : ''}`} aria-hidden="true">
-              <Icon size={22} weight="duotone" />
+            <div className="modal-head">
+              <div className={`modal-icon${request.danger ? ' is-danger' : ''}`} aria-hidden="true">
+                <Icon size={22} weight="duotone" />
+              </div>
+
+              <h2 id="confirm-dialog-title">{request.title}</h2>
             </div>
 
-            <h2 id="confirm-dialog-title">{request.title}</h2>
+            {/* Only the body scrolls, so the actions stay on screen even
+                when a long review list is taller than a phone viewport. */}
+            <div className="modal-body" id="confirm-dialog-message">
+              {request.items && (
+                <ol className="modal-review">
+                  {request.items.map((item, index) => (
+                    <li key={index}>
+                      <span className="modal-review-label">{item.label}</span>
+                      <span className="modal-review-value">{item.value}</span>
+                    </li>
+                  ))}
+                </ol>
+              )}
 
-            <p id="confirm-dialog-message">{request.message}</p>
+              <p>{request.message}</p>
+            </div>
 
             <div className="modal-actions">
               <button

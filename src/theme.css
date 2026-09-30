@@ -138,6 +138,12 @@
   transition: background-color 160ms var(--ease-out), color 160ms var(--ease-out);
 }
 
+/* Sits above a page heading, flush with its left edge. */
+.back-button {
+  align-self: flex-start;
+  margin-bottom: 14px;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .td-btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
   .td-btn-ghost:hover:not(:disabled) { border-color: var(--text-faint); }

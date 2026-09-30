@@ -28,6 +28,7 @@ function ForgotPassword() {
 
   return (
     <AuthLayout
+      backTo="/login"
       tagline="It happens. We'll help you get back into your account."
       title="Reset your password"
       subtitle="Enter the email address you registered with."

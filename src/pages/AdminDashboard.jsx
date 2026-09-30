@@ -11,6 +11,7 @@ import { useConfirm } from '../components/ConfirmDialog'
 import { useToast } from '../components/Toast'
 import {
   ArrowClockwise,
+  ArrowLeft,
   ArrowRight,
   Buildings,
   CalendarBlank,
@@ -537,6 +538,7 @@ function AdminDashboard() {
   const [accessError, setAccessError] = useState('')
   const [systemStatus, setSystemStatus] = useState('checking')
   const [activeSection, setActiveSection] = useState('overview')
+  const [sectionHistory, setSectionHistory] = useState([])
 
   const [elections, setElections] = useState([])
   const [selectedElectionId, setSelectedElectionId] = useState('')
@@ -962,7 +964,22 @@ function AdminDashboard() {
     window.location.href = '/login'
   }
 
+  // Sections are in-page state, not routes, so the console keeps its
+  // own trail for the Back button.
   function navigateTo(section) {
+    if (section !== activeSection) {
+      setSectionHistory((trail) => [...trail, activeSection])
+    }
+    showSection(section)
+  }
+
+  function goBackSection() {
+    const previous = sectionHistory[sectionHistory.length - 1] || 'overview'
+    setSectionHistory((trail) => trail.slice(0, -1))
+    showSection(previous)
+  }
+
+  function showSection(section) {
     setActiveSection(section)
     setShowFacultyUpload(false)
     setShowFacultyPhotos(false)
@@ -1251,6 +1268,12 @@ function AdminDashboard() {
       <main className="admin-main">
         <header className="admin-topbar">
           <div className="admin-topbar-context">
+            {activeSection !== 'overview' && (
+              <button type="button" className="topbar-back" onClick={goBackSection}>
+                <ArrowLeft size={16} aria-hidden="true" />
+                <span>Back</span>
+              </button>
+            )}
             <span className="breadcrumb">{activeNav.label}</span>
             <span className="admin-current-election-name">
               {activeElection?.title || 'No election selected'}

@@ -308,8 +308,27 @@
   transition: transform 300ms var(--ease-out);
 }
 
+.topbar-back {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 7px 10px;
+  margin-left: -10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 140ms var(--ease-out), color 140ms var(--ease-out);
+}
+
 @media (hover: hover) and (pointer: fine) {
   .topbar-refresh:hover { border-color: var(--text-faint); }
+  .topbar-back:hover { color: var(--text-h); background: var(--bg-sunken); }
 }
 
 .admin-content {
