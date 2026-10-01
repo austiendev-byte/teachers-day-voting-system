@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
 import { useConfirm } from '../components/ConfirmDialog'
-import { ArrowClockwise, MagnifyingGlass, UsersThree } from '@phosphor-icons/react'
+import { ArrowClockwise, CaretLeft, CaretRight, MagnifyingGlass, UsersThree } from '@phosphor-icons/react'
 import './AdminUsers.css'
 
 function formatVotedAt(value) {
@@ -17,6 +17,34 @@ function ballotState(status) {
   return 'partial'
 }
 
+// PostgREST returns at most 1,000 rows per request (Supabase's default
+// max_rows), so admin lists are read in pages until one comes back empty.
+const FETCH_PAGE_SIZE = 1000
+const ROWS_PER_PAGE = 50
+const LIVE_REFRESH_DELAY_MS = 3000
+
+async function fetchAllRows(makeQuery) {
+  const rows = []
+  for (;;) {
+    const { data, error } = await makeQuery().range(rows.length, rows.length + FETCH_PAGE_SIZE - 1)
+    if (error) return { data: rows, error }
+    if (!data || data.length === 0) return { data: rows, error: null }
+    rows.push(...data)
+  }
+}
+
+// Reloading every student on each vote would mean dozens of requests a
+// second at peak, so live updates wait for a short quiet spell.
+function debounce(fn, delay) {
+  let timer
+  const debounced = () => {
+    window.clearTimeout(timer)
+    timer = window.setTimeout(fn, delay)
+  }
+  debounced.cancel = () => window.clearTimeout(timer)
+  return debounced
+}
+
 function AdminUsers({ electionId, electionTitle }) {
   const toast = useToast()
   const confirm = useConfirm()
@@ -28,48 +56,56 @@ function AdminUsers({ electionId, electionTitle }) {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [workingId, setWorkingId] = useState(null)
+  const [page, setPage] = useState(1)
 
-  async function loadUsers() {
-    setLoading(true)
-    const { data, error } = await supabase.rpc('admin_list_students')
+  const loadUsers = useCallback(async () => {
+    const { data, error } = await fetchAllRows(() => supabase.rpc('admin_list_students'))
     if (error) {
       console.error('Admin users loading error:', error)
-      setUsers([])
+      toast.error(`Could not load student accounts.\n\n${error.message}`)
     } else {
-      setUsers(data || [])
+      setUsers(data)
     }
     setLoading(false)
-  }
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadUsers()
-    const channel = supabase.channel('admin-student-management').on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, loadUsers).subscribe()
-    return () => supabase.removeChannel(channel)
-  }, [])
+  }, [toast])
 
   const loadVoteStatus = useCallback(async () => {
     if (!electionId) {
       setVoteStatus(new Map())
       return
     }
-    const { data, error } = await supabase.rpc('admin_student_vote_status', { p_election_id: Number(electionId) })
+    const { data, error } = await fetchAllRows(() => supabase.rpc('admin_student_vote_status', { p_election_id: Number(electionId) }))
     if (error) {
       console.error('Student vote status loading error:', error)
       return
     }
-    setVoteStatus(new Map((data || []).map((row) => [Number(row.student_id), row])))
+    setVoteStatus(new Map(data.map((row) => [Number(row.student_id), row])))
   }, [electionId])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadUsers()
+    const refresh = debounce(loadUsers, LIVE_REFRESH_DELAY_MS)
+    const channel = supabase.channel('admin-student-management').on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, refresh).subscribe()
+    return () => {
+      refresh.cancel()
+      supabase.removeChannel(channel)
+    }
+  }, [loadUsers])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadVoteStatus()
     if (!electionId) return undefined
+    const refresh = debounce(loadVoteStatus, LIVE_REFRESH_DELAY_MS)
     const channel = supabase
       .channel('admin-student-vote-status')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'category_votes', filter: `election_id=eq.${electionId}` }, loadVoteStatus)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'category_votes', filter: `election_id=eq.${electionId}` }, refresh)
       .subscribe()
-    return () => supabase.removeChannel(channel)
+    return () => {
+      refresh.cancel()
+      supabase.removeChannel(channel)
+    }
   }, [electionId, loadVoteStatus])
 
   function refreshAll() {
@@ -96,17 +132,30 @@ function AdminUsers({ electionId, electionTitle }) {
     return counts
   }, [users, voteStatus, schoolFilter])
 
+  const pageCount = Math.max(1, Math.ceil(filtered.length / ROWS_PER_PAGE))
+  const currentPage = Math.min(page, pageCount)
+  const pageStart = (currentPage - 1) * ROWS_PER_PAGE
+  const visible = filtered.slice(pageStart, pageStart + ROWS_PER_PAGE)
+
+  // Any filter change starts the list over at page 1.
+  function filterSetter(setter) {
+    return (event) => {
+      setter(event.target.value)
+      setPage(1)
+    }
+  }
+
   async function approve(user) {
     setWorkingId(user.id)
     const { error } = await supabase.rpc('admin_set_student_status', { p_student_id: Number(user.id), p_status: 'approved' })
-    if (error) toast.error(error.message); else await loadUsers()
+    if (error) toast.error(error.message); else setUsers((current) => current.map((u) => (u.id === user.id ? { ...u, account_status: 'approved' } : u)))
     setWorkingId(null)
   }
 
   async function setPending(user) {
     setWorkingId(user.id)
     const { error } = await supabase.rpc('admin_set_student_status', { p_student_id: Number(user.id), p_status: 'pending' })
-    if (error) toast.error(error.message); else await loadUsers()
+    if (error) toast.error(error.message); else setUsers((current) => current.map((u) => (u.id === user.id ? { ...u, account_status: 'pending' } : u)))
     setWorkingId(null)
   }
 
@@ -120,7 +169,7 @@ function AdminUsers({ electionId, electionTitle }) {
     if (!confirmed) return
     setWorkingId(user.id)
     const { error } = await supabase.rpc('admin_delete_student', { p_student_id: Number(user.id) })
-    if (error) toast.error(error.message); else await loadUsers()
+    if (error) toast.error(error.message); else setUsers((current) => current.filter((u) => u.id !== user.id))
     setWorkingId(null)
   }
 
@@ -129,12 +178,12 @@ function AdminUsers({ electionId, electionTitle }) {
       <div className="admin-users-toolbar">
         <div className="admin-users-filters">
           <label className="sr-only" htmlFor="admin-users-school">School</label>
-          <select id="admin-users-school" className="admin-select" value={schoolFilter} onChange={(event) => setSchoolFilter(event.target.value)}>
+          <select id="admin-users-school" className="admin-select" value={schoolFilter} onChange={filterSetter(setSchoolFilter)}>
             <option value="ALL">All schools</option>
             {schoolOptions.map((school) => <option key={school.id} value={school.id}>{school.code} · {school.name}</option>)}
           </select>
           <label className="sr-only" htmlFor="admin-users-status">Status</label>
-          <select id="admin-users-status" className="admin-select" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+          <select id="admin-users-status" className="admin-select" value={statusFilter} onChange={filterSetter(setStatusFilter)}>
             <option value="ALL">All statuses</option>
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
@@ -143,7 +192,7 @@ function AdminUsers({ electionId, electionTitle }) {
           {electionId && (
             <>
               <label className="sr-only" htmlFor="admin-users-ballot">Ballot</label>
-              <select id="admin-users-ballot" className="admin-select" value={ballotFilter} onChange={(event) => setBallotFilter(event.target.value)}>
+              <select id="admin-users-ballot" className="admin-select" value={ballotFilter} onChange={filterSetter(setBallotFilter)}>
                 <option value="ALL">Voted and not voted</option>
                 <option value="voted">Voted</option>
                 <option value="not_voted">Not voted</option>
@@ -159,14 +208,14 @@ function AdminUsers({ electionId, electionTitle }) {
               type="search"
               placeholder="Search name or student ID"
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={filterSetter(setSearch)}
             />
           </div>
         </div>
         <div className="admin-users-toolbar-end">
           {!loading && (
             <span className="admin-users-count">
-              <span className="num">{filtered.length}</span> of <span className="num">{users.length}</span> students
+              <span className="num">{filtered.length.toLocaleString('en-US')}</span> of <span className="num">{users.length.toLocaleString('en-US')}</span> students
             </span>
           )}
           <button type="button" className="admin-button secondary" onClick={refreshAll}>
@@ -207,7 +256,7 @@ function AdminUsers({ electionId, electionTitle }) {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((user) => (
+              {visible.map((user) => (
                 <tr key={user.id}>
                   <td>
                     <strong>{user.name}</strong>
@@ -251,6 +300,25 @@ function AdminUsers({ electionId, electionTitle }) {
             </div>
           )}
         </div>
+      )}
+
+      {!loading && pageCount > 1 && (
+        <nav className="admin-users-pager" aria-label="Student list pages">
+          <span>
+            Showing <span className="num">{(pageStart + 1).toLocaleString('en-US')}</span>–<span className="num">{(pageStart + visible.length).toLocaleString('en-US')}</span> of <span className="num">{filtered.length.toLocaleString('en-US')}</span>
+          </span>
+          <div className="admin-users-pager-buttons">
+            <button type="button" className="admin-button secondary" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>
+              <CaretLeft size={14} aria-hidden="true" />
+              Previous
+            </button>
+            <span className="num">Page {currentPage} of {pageCount}</span>
+            <button type="button" className="admin-button secondary" disabled={currentPage === pageCount} onClick={() => setPage(currentPage + 1)}>
+              Next
+              <CaretRight size={14} aria-hidden="true" />
+            </button>
+          </div>
+        </nav>
       )}
     </section>
   )

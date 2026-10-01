@@ -188,6 +188,27 @@
   color: var(--text-h);
 }
 
+.admin-users-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.admin-users-pager-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-users-pager .admin-button {
+  min-height: 32px;
+  padding: 5px 11px;
+}
+
 .admin-users-skeleton {
   display: grid;
   gap: 8px;
