@@ -98,6 +98,71 @@
 .admin-user-status.pending { background: var(--warning-bg); border-color: var(--warning-border); color: var(--warning); }
 .admin-user-status.suspended { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger); }
 
+.admin-user-ballot {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--neutral-border);
+  background: var(--neutral-bg);
+  color: var(--neutral);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-user-ballot.voted { background: var(--success-bg); border-color: var(--success-border); color: var(--success); }
+.admin-user-ballot.partial { background: var(--warning-bg); border-color: var(--warning-border); color: var(--warning); }
+
+.admin-user-voted-at {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.admin-users-ballot-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.admin-users-ballot-summary strong {
+  color: var(--text-h);
+}
+
+.admin-users-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 220px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text-muted);
+}
+
+.admin-users-search input {
+  flex: 1;
+  min-width: 0;
+  min-height: 38px;
+  border: 0;
+  background: transparent;
+  color: var(--text-h);
+  font: inherit;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.admin-users-search:focus-within {
+  border-color: var(--accent, var(--text-h));
+}
+
 .admin-user-actions {
   display: flex;
   justify-content: flex-end;
@@ -135,7 +200,8 @@
 
 @media (max-width: 640px) {
   .admin-users-filters,
-  .admin-users-filters .admin-select {
+  .admin-users-filters .admin-select,
+  .admin-users-search {
     width: 100%;
     min-width: 0;
   }

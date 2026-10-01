@@ -106,7 +106,7 @@ export const STATE_COPY = {
   },
   school_open: {
     title: 'Voting is open for your school',
-    message: 'You may now complete the nine-category official ballot and submit it once.',
+    message: 'You may now complete the official ballot and submit it once.',
     tone: 'success'
   },
   school_closed: {
@@ -683,7 +683,7 @@ export default function useStudentBallot() {
       return { ok: false }
     }
 
-    if (awardCategories.length !== 9) {
+    if (awardCategories.length === 0) {
       toast.error('The official ballot is not fully configured yet. Please try again shortly.')
       return { ok: false }
     }

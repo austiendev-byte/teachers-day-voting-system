@@ -1,16 +1,31 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
 import { useConfirm } from '../components/ConfirmDialog'
-import { ArrowClockwise, UsersThree } from '@phosphor-icons/react'
+import { ArrowClockwise, MagnifyingGlass, UsersThree } from '@phosphor-icons/react'
 import './AdminUsers.css'
 
-function AdminUsers() {
+function formatVotedAt(value) {
+  if (!value) return ''
+  return new Intl.DateTimeFormat('en-PH', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
+}
+
+// 'voted' once every active category for the student's school has a vote.
+function ballotState(status) {
+  if (!status || status.voted_categories === 0) return 'not_voted'
+  if (status.active_categories > 0 && status.voted_categories >= status.active_categories) return 'voted'
+  return 'partial'
+}
+
+function AdminUsers({ electionId, electionTitle }) {
   const toast = useToast()
   const confirm = useConfirm()
   const [users, setUsers] = useState([])
+  const [voteStatus, setVoteStatus] = useState(new Map())
   const [schoolFilter, setSchoolFilter] = useState('ALL')
   const [statusFilter, setStatusFilter] = useState('ALL')
+  const [ballotFilter, setBallotFilter] = useState('ALL')
+  const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [workingId, setWorkingId] = useState(null)
 
@@ -27,13 +42,59 @@ function AdminUsers() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadUsers()
     const channel = supabase.channel('admin-student-management').on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, loadUsers).subscribe()
     return () => supabase.removeChannel(channel)
   }, [])
 
+  const loadVoteStatus = useCallback(async () => {
+    if (!electionId) {
+      setVoteStatus(new Map())
+      return
+    }
+    const { data, error } = await supabase.rpc('admin_student_vote_status', { p_election_id: Number(electionId) })
+    if (error) {
+      console.error('Student vote status loading error:', error)
+      return
+    }
+    setVoteStatus(new Map((data || []).map((row) => [Number(row.student_id), row])))
+  }, [electionId])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadVoteStatus()
+    if (!electionId) return undefined
+    const channel = supabase
+      .channel('admin-student-vote-status')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'category_votes', filter: `election_id=eq.${electionId}` }, loadVoteStatus)
+      .subscribe()
+    return () => supabase.removeChannel(channel)
+  }, [electionId, loadVoteStatus])
+
+  function refreshAll() {
+    loadUsers()
+    loadVoteStatus()
+  }
+
   const schoolOptions = useMemo(() => [...new Map(users.map(u => [u.school_id, { id: u.school_id, code: u.school_code, name: u.school_name }]).filter(x => x[0] != null)).values()].sort((a,b) => String(a.code).localeCompare(String(b.code))), [users])
-  const filtered = useMemo(() => users.filter(u => (schoolFilter === 'ALL' || String(u.school_id) === schoolFilter) && (statusFilter === 'ALL' || u.account_status === statusFilter)), [users, schoolFilter, statusFilter])
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase()
+    return users.filter(u =>
+      (schoolFilter === 'ALL' || String(u.school_id) === schoolFilter) &&
+      (statusFilter === 'ALL' || u.account_status === statusFilter) &&
+      (ballotFilter === 'ALL' || ballotState(voteStatus.get(Number(u.id))) === ballotFilter) &&
+      (!query || String(u.name || '').toLowerCase().includes(query) || String(u.student_id || '').toLowerCase().includes(query))
+    )
+  }, [users, voteStatus, schoolFilter, statusFilter, ballotFilter, search])
+
+  const ballotSummary = useMemo(() => {
+    const counts = { voted: 0, partial: 0, not_voted: 0 }
+    users
+      .filter(u => schoolFilter === 'ALL' || String(u.school_id) === schoolFilter)
+      .forEach(u => { counts[ballotState(voteStatus.get(Number(u.id)))] += 1 })
+    return counts
+  }, [users, voteStatus, schoolFilter])
 
   async function approve(user) {
     setWorkingId(user.id)
@@ -79,6 +140,28 @@ function AdminUsers() {
             <option value="approved">Approved</option>
             <option value="suspended">Suspended</option>
           </select>
+          {electionId && (
+            <>
+              <label className="sr-only" htmlFor="admin-users-ballot">Ballot</label>
+              <select id="admin-users-ballot" className="admin-select" value={ballotFilter} onChange={(event) => setBallotFilter(event.target.value)}>
+                <option value="ALL">Voted and not voted</option>
+                <option value="voted">Voted</option>
+                <option value="not_voted">Not voted</option>
+                {ballotSummary.partial > 0 && <option value="partial">Partially voted</option>}
+              </select>
+            </>
+          )}
+          <div className="admin-users-search">
+            <MagnifyingGlass size={15} aria-hidden="true" />
+            <label className="sr-only" htmlFor="admin-users-search">Search students</label>
+            <input
+              id="admin-users-search"
+              type="search"
+              placeholder="Search name or student ID"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </div>
         </div>
         <div className="admin-users-toolbar-end">
           {!loading && (
@@ -86,12 +169,25 @@ function AdminUsers() {
               <span className="num">{filtered.length}</span> of <span className="num">{users.length}</span> students
             </span>
           )}
-          <button type="button" className="admin-button secondary" onClick={loadUsers}>
+          <button type="button" className="admin-button secondary" onClick={refreshAll}>
             <ArrowClockwise size={15} aria-hidden="true" />
             Refresh
           </button>
         </div>
       </div>
+
+      {electionId ? (
+        <div className="admin-users-ballot-summary">
+          <span>Ballots for <strong>{electionTitle || 'the selected election'}</strong>{schoolFilter !== 'ALL' && ' in this school'}:</span>
+          <span className="admin-user-ballot voted"><span className="num">{ballotSummary.voted}</span> voted</span>
+          <span className="admin-user-ballot not_voted"><span className="num">{ballotSummary.not_voted}</span> not voted</span>
+          {ballotSummary.partial > 0 && (
+            <span className="admin-user-ballot partial"><span className="num">{ballotSummary.partial}</span> partial</span>
+          )}
+        </div>
+      ) : (
+        <p className="admin-users-ballot-summary">Select an election on the overview to see who has voted.</p>
+      )}
 
       {loading ? (
         <div className="admin-users-skeleton" role="status" aria-label="Loading student accounts">
@@ -106,6 +202,7 @@ function AdminUsers() {
                 <th>School</th>
                 <th>Program</th>
                 <th>Status</th>
+                {electionId && <th>Ballot</th>}
                 <th><span className="sr-only">Actions</span></th>
               </tr>
             </thead>
@@ -119,6 +216,18 @@ function AdminUsers() {
                   <td className="num">{user.school_code || '-'}</td>
                   <td className="num">{user.program_code || '-'}</td>
                   <td><span className={`admin-user-status ${user.account_status}`}>{user.account_status}</span></td>
+                  {electionId && (() => {
+                    const status = voteStatus.get(Number(user.id))
+                    const state = ballotState(status)
+                    return (
+                      <td>
+                        <span className={`admin-user-ballot ${state}`}>
+                          {state === 'voted' ? 'Voted' : state === 'partial' ? `${status.voted_categories} of ${status.active_categories}` : 'Not voted'}
+                        </span>
+                        {status?.last_voted_at && <span className="admin-user-voted-at">{formatVotedAt(status.last_voted_at)}</span>}
+                      </td>
+                    )
+                  })()}
                   <td>
                     <div className="admin-user-actions">
                       {user.account_status !== 'approved' && (

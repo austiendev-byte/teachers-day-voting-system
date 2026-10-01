@@ -1589,11 +1589,13 @@ function AdminDashboard() {
             <section>
               <div className="page-heading">
                 <div>
-                  <h1>Student accounts</h1>
-                  <p>Approve, suspend or remove student accounts, filtered by school.</p>
+                  <h1>Students</h1>
+                  <p>See who has voted and who hasn&rsquo;t, and approve, suspend or remove student accounts.</p>
                 </div>
               </div>
-              <div className="module-card"><AdminUsers /></div>
+              <div className="module-card">
+                <AdminUsers electionId={selectedElectionId} electionTitle={activeElection?.title} />
+              </div>
             </section>
           )}
 
