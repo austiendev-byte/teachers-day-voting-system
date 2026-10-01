@@ -6,23 +6,29 @@
   flex: none;
 }
 
+/* cover, not contain: the seals are round, and the one non-square
+   source (SCJE) would otherwise show its corners inside the circle. */
 .brand-logo {
-  object-fit: contain;
+  object-fit: cover;
   border-radius: 50%;
   background: oklch(100% 0 0);
   box-shadow: 0 0 0 2px var(--surface), var(--shadow-sm);
 }
 
+/* Ten seals overlap into one compact stack. */
 .brand-logos-sm .brand-logo {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
 }
 
 .brand-logos-sm .brand-logo + .brand-logo {
-  margin-left: -8px;
+  margin-left: -9px;
 }
 
+/* Two even rows of five rather than one line that runs off the panel. */
 .brand-logos-lg {
+  display: grid;
+  grid-template-columns: repeat(5, max-content);
   gap: 10px;
 }
 
@@ -172,6 +178,25 @@
 
   .site-header-band-inner {
     padding: 6px 16px;
+  }
+
+  /* The logo stack takes its own row so the names keep their width. */
+  .site-header-identity {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .site-header-text {
+    flex-basis: 100%;
+  }
+
+  .brand-logos-sm .brand-logo {
+    width: 30px;
+    height: 30px;
+  }
+
+  .brand-logos-sm .brand-logo + .brand-logo {
+    margin-left: -7px;
   }
 
   .site-nav {
